@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euo pipefail
+
+mkdir -p "$HOME/Library/Caches/gssh"
+
+pcache="$HOME/Library/Caches/gssh/projects.json"
+test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$pcache" 2>/dev/null)" &&
+  gcloud projects list --format json >"$pcache"
+
+project="$(jq -r '.[].projectId' "$pcache" | fzf)"
+
+icache="$HOME/Library/Caches/gssh/instances-$project.json"
+test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$icache" 2>/dev/null)" &&
+  gcloud compute instances list --project "$project" --format json >"$icache"
+
+name="$(jq -r '.[].name' "$icache" | fzf)"
+
+
+ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | head -n1)"
+
+ssh root@"$ip"
