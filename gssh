@@ -45,8 +45,8 @@ test $# -ge 1 && test "$1" == "--flush" && {
 }
 
 test $# -ge 1 && test "$1" == "--edit" && {
-  echo "opening config file using $EDITOR..." >&2
-  $EDITOR "$CONFIG"
+  echo "opening config file using ${EDITOR:-vim}..." >&2
+  "${EDITOR:-vim}" "$CONFIG"
   exit 0
 }
 
