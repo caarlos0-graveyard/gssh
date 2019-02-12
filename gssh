@@ -1,21 +1,28 @@
 #!/bin/bash
 set -euo pipefail
 
-mkdir -p "$HOME/Library/Caches/gssh"
+CACHE="$HOME/Library/Caches/gssh"
+test "$(uname)" = "Linux" && CACHE="$HOME/.cache/gssh"
+mkdir -p "$CACHE"
 
-pcache="$HOME/Library/Caches/gssh/projects.json"
-test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$pcache" 2>/dev/null)" &&
+pcache="$CACHE/projects.json"
+test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$pcache" 2>/dev/null)" && {
+  echo "updating projects cache..." >&2
   gcloud projects list --format json >"$pcache"
+}
 
 project="$(jq -r '.[].projectId' "$pcache" | fzf)"
 
-icache="$HOME/Library/Caches/gssh/instances-$project.json"
-test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$icache" 2>/dev/null)" &&
+icache="$CACHE/instances-$project.json"
+# shellcheck disable=SC2046
+if [[ $(date -v-5M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
+  echo "updating instance cache..." >&2
   gcloud compute instances list --project "$project" --format json >"$icache"
+fi
 
 name="$(jq -r '.[].name' "$icache" | fzf)"
 
+ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | fzf -1)"
 
-ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | head -n1)"
-
+echo "ssh-ing into $ip..." >&2
 ssh root@"$ip"
