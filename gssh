@@ -71,7 +71,7 @@ if [[ $(date -v-5M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/nul
   gcloud compute instances list --project "$project" --format json >"$icache"
 fi
 
-name="$(jq -r '.[] | "\(.name) \(.tags.items) \(.networkInterfaces[].networkIP)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
+name="$(jq -r '.[] | "\(.name) \(.tags.items)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
 
 ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | fzf -1)"
 
