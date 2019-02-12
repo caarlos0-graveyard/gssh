@@ -1,6 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+test "$1" == "--help" || test "$1" == "-h" && {
+  echo "
+ gssh: quickly ssh into gcloud instances using fzf to filter.
+
+ Usage:
+
+ Basic usage:
+   $ gssh
+
+ Pre-filter project:
+   $ gssh my-proj
+
+ Pre-filter both project and instance:
+   $ gssh my-proj instance-xyz
+" >&2
+  exit 0
+}
+
 CACHE="$HOME/Library/Caches/gssh"
 test "$(uname)" = "Linux" && CACHE="$HOME/.cache/gssh"
 mkdir -p "$CACHE"
@@ -11,7 +29,7 @@ test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$pcache" 2>/dev/null)" && {
   gcloud projects list --format json >"$pcache"
 }
 
-project="$(jq -r '.[].projectId' "$pcache" | fzf)"
+project="$(jq -r '.[].projectId' "$pcache" | fzf -q "$1" -1)"
 
 icache="$CACHE/instances-$project.json"
 # shellcheck disable=SC2046
@@ -20,7 +38,7 @@ if [[ $(date -v-5M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/nul
   gcloud compute instances list --project "$project" --format json >"$icache"
 fi
 
-name="$(jq -r '.[].name' "$icache" | fzf)"
+name="$(jq -r '.[].name' "$icache" | fzf -q "$2" -1)"
 
 ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | fzf -1)"
 
