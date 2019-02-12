@@ -3,7 +3,7 @@ set -euo pipefail
 
 test $# -ge 1 && { test "$1" == "--help" || test "$1" == "-h"; } && {
   echo "
- gssh: quickly ssh into gcloud instances using fzf to filter.
+ gssh: quickly ssh into gcloud instances.
 
  Usage:
 
