@@ -53,6 +53,7 @@ test $# -ge 1 && test "$1" == "--edit" && {
 pcache="$CACHE/projects.json"
 test "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' "$pcache" 2>/dev/null)" && {
   echo "updating projects cache..." >&2
+  trap 'rm $pcache' SIGINT
   gcloud projects list --format json >"$pcache"
 }
 
@@ -68,6 +69,7 @@ icache="$CACHE/instances-$project.json"
 # shellcheck disable=SC2046
 if [[ $(date -v-5M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
   echo "updating $project instance cache..." >&2
+  trap 'rm $icache' SIGINT
   gcloud compute instances list --project "$project" --format json >"$icache"
 fi
 
