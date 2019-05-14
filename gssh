@@ -67,7 +67,7 @@ project="$(jq -r '.[].projectId' "$pcache" | fzf -q "$qproj" -1)"
 
 icache="$CACHE/instances-$project.json"
 # shellcheck disable=SC2046
-if [[ $(date -v-5M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
+if [[ $(date -v-60M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
   echo "updating $project instance cache..." >&2
   trap 'rm $icache' SIGINT
   gcloud compute instances list --project "$project" --format json >"$icache"
