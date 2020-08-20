@@ -75,8 +75,5 @@ fi
 
 name="$(jq -r '.[] | "\(.name) \(.tags.items)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
 
-ip="$(jq -r ".[] | select(.name == \"$name\") | .networkInterfaces[] | .networkIP" "$icache" | fzf -1)"
-
-echo "ssh-ing into $ip..." >&2
-# shellcheck disable=SC2154
-ssh "$ssh_user@$ip"
+echo "ssh-ing into $name..." >&2
+gcloud beta compute ssh "$name" --tunnel-through-iap --project "$project"
