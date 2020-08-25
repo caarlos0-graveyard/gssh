@@ -24,15 +24,13 @@ Usage:
   exit 0
 }
 
+CACHE="$HOME/Library/Caches/gssh"
+test "$(uname)" = "Linux" && CACHE="$HOME/.cache/gssh"
+mkdir -p "$CACHE"
+
 test $# -ge 1 && test "$1" == "--flush" && {
   echo "flushing caches..." >&2
   rm -rf "$CACHE"
-  exit 0
-}
-
-test $# -ge 1 && test "$1" == "--edit" && {
-  echo "opening config file using ${EDITOR:-vim}..." >&2
-  "${EDITOR:-vim}" "$CONFIG"
   exit 0
 }
 
