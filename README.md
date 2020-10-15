@@ -19,10 +19,3 @@ You'll also need the `gcloud` cli available and set up, you can do so with:
 $ brew cask install google-cloud-sdk
 $ gcloud auth login
 ```
-
-You may also need to change the default SSH username from `root` to something
-else:
-
-```sh
-$ gssh --edit
-```
