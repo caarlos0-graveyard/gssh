@@ -9,16 +9,19 @@ gssh: quickly ssh into gcloud instances.
 Usage:
 
   Basic usage:
-    $ gssh
+    gssh
 
   Pre-filter project:
-    $ gssh my-proj
+    gssh my-proj
 
   Pre-filter both project and instance:
-    $ gssh my-proj instance-xyz
+    gssh my-proj instance-xyz
 
   Flush caches:
-    $ gssh --flush
+    gssh --flush
+
+  Port-forward instance port 9200 to localhost:19200:
+    GSSH_FLAGS='-L 19200:localhost:9200' gssh my-proj elasticsearch
 
 " >&2
   exit 0
@@ -45,7 +48,7 @@ export qproj=""
 export qinst=""
 
 test $# -ge 1 && qproj="$1"
-test $# -eq 2 && qinst="$2"
+test $# -ge 2 && qinst="$2"
 
 project="$(jq -r '.[].projectId' "$pcache" | fzf -q "$qproj" -1)"
 
@@ -60,4 +63,5 @@ fi
 name="$(jq -r '.[] | "\(.name) \(.networkInterfaces[0].networkIP)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
 
 echo "ssh-ing into $name..." >&2
-gcloud beta compute ssh "$name" --tunnel-through-iap --project "$project"
+# shellcheck disable=SC2086
+gcloud beta compute ssh "$name" --tunnel-through-iap --project "$project" -- $GSSH_FLAGS
