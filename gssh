@@ -57,7 +57,7 @@ if [[ $(date -v-60M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/nu
   gcloud compute instances list --project "$project" --format json >"$icache"
 fi
 
-name="$(jq -r '.[] | "\(.name) \(.tags.items)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
+name="$(jq -r '.[] | "\(.name) \(.networkInterfaces[0].networkIP)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
 
 echo "ssh-ing into $name..." >&2
 gcloud beta compute ssh "$name" --tunnel-through-iap --project "$project"
