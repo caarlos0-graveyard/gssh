@@ -54,13 +54,13 @@ project="$(jq -r '.[].projectId' "$pcache" | fzf -q "$qproj" -1)"
 
 icache="$CACHE/instances-$project.json"
 # shellcheck disable=SC2046
-if [[ $(date -v-60M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
+if [[ $(date -v-180M +'%j%H%M') > $(stat -f '%Sm' -t '%j%H%M' "$icache" 2>/dev/null) ]]; then
   echo "updating $project instance cache..." >&2
   trap 'rm $icache' SIGINT
   gcloud compute instances list --project "$project" --format json >"$icache"
 fi
 
-name="$(jq -r '.[] | "\(.name) \(.networkInterfaces[0].networkIP)"' "$icache" | column -t | fzf -q "$qinst" -1 | awk '{print $1}')"
+name="$(jq -r '.[] | .name' "$icache" | fzf -q "$qinst" -1 | awk '{print $1}')"
 
 echo "ssh-ing into $name..." >&2
 # shellcheck disable=SC2086
